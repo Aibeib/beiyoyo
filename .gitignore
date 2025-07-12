@@ -7,13 +7,6 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-
-beiyoyo-server/node_modules/
-beiyoyo-client/node_modules/
-beiyoyo-server/dist/
-beiyoyo-client/dist/
-beiyoyo-server/dist-ss/
-beiyoyo-client/dist-ss/
 **/node_modules/
 node_modules
 dist
