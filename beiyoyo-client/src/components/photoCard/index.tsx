@@ -1,10 +1,20 @@
+import { PlusOutlined } from "@ant-design/icons";
 import "./index.less";
 import { Image } from "antd";
-export const PhotoCard = () => {
-  return (
-    <div className="flex  photo-card rounded-[8px] mr-4 w-[200px] p-2 overflow-hidden">
-      <div className="w-[200px] h-[240px]">
-        {/* <img src='../../../public/photo_1.jpeg' style={{ width: '100%', height: '200px', objectFit: "cover", objectPosition: "center", borderRadius: '8px', imageRendering: "pixelated" }} /> */}
+type Props = {
+  isNewAdd?: boolean;
+};
+export const PhotoCard = (props: Props) => {
+  const { isNewAdd } = props;
+  return isNewAdd ? (
+    <div className="flex justify-center cursor-pointer add-card  h-full items-center bg-[rgba(169,214,222,0.3)] rounded-[8px] w-[200px] overflow-hidden">
+      <div className="w-[200px]  flex justify-center items-center">
+        <PlusOutlined className="text-[32px] !text-[#646a73]" />
+      </div>
+    </div>
+  ) : (
+    <div className="flex photo-card rounded-[8px] w-[200px] h-full p-2 overflow-hidden">
+      <div className="w-[200px] h-full">
         <Image
           src="../../../public/photo_1.jpeg"
           width="100%"
