@@ -27,7 +27,7 @@ export const UserInfo = observer(() => {
   return (
     <div className="flex justify-end items-center ">
       <Popover arrow={false} content={userInfoContent} className="">
-        <Avatar shape="circle"></Avatar>
+        <Avatar shape="circle" icon={<UserOutlined />}></Avatar>
       </Popover>
     </div>
   );

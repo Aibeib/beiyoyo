@@ -1,8 +1,8 @@
 import React from "react";
 import { Layout, theme, Avatar, Input } from "antd";
 import "./index.less";
-import { PhotoList } from "@/components/photoList";
 import { UserInfo } from "./userInfo";
+import { Outlet } from "react-router-dom";
 
 const { Header, Content, Footer } = Layout;
 
@@ -31,9 +31,10 @@ const Page: React.FC = () => {
         className="header content_bg mb-4"
       >
         <Avatar
-          src="../../public/logo_2.png"
-          className=" demo-logo"
+          src="../../public/logo_1.png"
+          className=" demo-logo flex justify-center items-center"
           shape="square"
+          size='large'
         />
         <div className="w-[calc(100%-32px)] flex justify-end ">
           <div className="mr-4">
@@ -46,7 +47,7 @@ const Page: React.FC = () => {
       </Header>
       <Content
         style={{ padding: "0 48px" }}
-        className="content  h-[calc(100vh-149px)]   "
+        className="content  h-[calc(100vh-149px)]"
       >
         <div
           style={{
@@ -57,7 +58,7 @@ const Page: React.FC = () => {
           }}
           className="content-container bg_color content_bg h-full overflow-auto"
         >
-          <PhotoList />
+          <Outlet />
         </div>
       </Content>
       <Footer style={{ textAlign: "center" }} className="footer content_bg ">

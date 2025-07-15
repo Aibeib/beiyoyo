@@ -1,12 +1,15 @@
 import "./App.css";
-import Page from "./pages";
-// import { Login } from './pages/login'
+import { useRoutes } from "react-router-dom";
+import routes from "./router.config";
+import { Suspense } from "react";
 
 function App() {
+  const element = useRoutes(routes);
   return (
     <>
-      <Page />
-      {/* <Login /> */}
+      <Suspense fallback={<div>Loading...</div>}>
+        {element}
+      </Suspense>
     </>
   );
 }

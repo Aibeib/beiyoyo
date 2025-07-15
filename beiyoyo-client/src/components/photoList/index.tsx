@@ -3,7 +3,7 @@ import { PhotoCard } from "../photoCard";
 import { Col, Row } from "antd";
 
 export const PhotoList = observer(() => {
-  const dataList = new Array(4).fill("");
+  const dataList = new Array(1).fill("");
   return (
     <div className="my-0 mx-auto ">
       <Row gutter={[25, 16]} justify="start">
