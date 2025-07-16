@@ -1,68 +1,82 @@
 import { Button, Form, Input, Image, Tooltip } from "antd";
 import { observer } from "mobx-react";
-import './index.css'
+import "./index.css";
 import { useMemo, useState } from "react";
 import classNames from "classnames";
-import { EyeInvisibleOutlined, EyeTwoTone, MailOutlined, SendOutlined } from "@ant-design/icons";
+import {
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  MailOutlined,
+  SendOutlined,
+} from "@ant-design/icons";
 import OneMinuteCountdown from "@/components/Countdown";
 import { BtnTextMapper, LoginFormType } from "./const";
 import axios from "axios";
 
-const { Item } = Form
+const { Item } = Form;
 
 export const Login = observer(() => {
-  const [loginFormType, setLoginFormType] = useState(LoginFormType.Login)
-  const [isSended, setIsSended] = useState(false)
+  const [loginFormType, setLoginFormType] = useState(LoginFormType.Login);
+  const [isSended, setIsSended] = useState(false);
   const [form] = Form.useForm();
 
   const mailSuffix = useMemo(() => {
     if (loginFormType !== LoginFormType.Login) {
       if (isSended) {
-        return <OneMinuteCountdown
-          deadline={15000}
-          onFinish={() => setIsSended(false)}
-        />
-      } else {
-        return <Tooltip title={"发送验证码"}>
-          <SendOutlined
-            className={classNames('!text-[#757575] hover:!text-[#1f2327] cursor-pointer',)}
-            onClick={async () => {
-              const mail = await form.getFieldValue('email')
-              if (mail) {
-                setIsSended(true)
-                const res = await axios({
-                  url: '/proxy-api/api/verification_code',
-                  method: 'POST',
-                  data: {
-                    email: mail
-                  }
-                })
-                console.log(res, 'res')
-              }
-            }}
+        return (
+          <OneMinuteCountdown
+            deadline={15000}
+            onFinish={() => setIsSended(false)}
           />
-        </Tooltip>
+        );
+      } else {
+        return (
+          <Tooltip title={"发送验证码"}>
+            <SendOutlined
+              className={classNames(
+                "!text-[#757575] hover:!text-[#1f2327] cursor-pointer"
+              )}
+              onClick={async () => {
+                const mail = await form.getFieldValue("email");
+                if (mail) {
+                  setIsSended(true);
+                  const res = await axios({
+                    url: "/proxy-api/api/verification_code",
+                    method: "POST",
+                    data: {
+                      email: mail,
+                    },
+                  });
+                  console.log(res, "res");
+                }
+              }}
+            />
+          </Tooltip>
+        );
       }
     }
-    return <MailOutlined className="!text-[#757575]" />
-  }, [form, isSended, loginFormType])
+    return <MailOutlined className="!text-[#757575]" />;
+  }, [form, isSended, loginFormType]);
 
   return (
     <div className="login-container overflow-auto ">
       <div className="screen-1 min-h-[400px] flex justify-center w-[340px]">
-        <Image rootClassName="!flex !justify-center !items-center" src="../../../public/logo_1.png" className="logo !w-[240px]" preview={false} />
-        <Form
-          className="login-form w-full"
-          layout="vertical"
-          form={form}
-        >
+        <Image
+          rootClassName="!flex !justify-center !items-center"
+          src="../../../public/logo_1.png"
+          className="logo !w-[240px]"
+          preview={false}
+        />
+        <Form className="login-form w-full" layout="vertical" form={form}>
           <Item
-            name='email'
-            label='邮箱'
-            rules={[{
-              required: true,
-              message: '请输入邮箱'
-            }]}
+            name="email"
+            label="邮箱"
+            rules={[
+              {
+                required: true,
+                message: "请输入邮箱",
+              },
+            ]}
             className="email !pb-1 w-full"
           >
             <Input
@@ -73,95 +87,113 @@ export const Login = observer(() => {
             />
           </Item>
           <Item
-            name='password'
-            label={loginFormType === LoginFormType.UpdatePassword ? '新密码' : '密码'}
-            rules={[{
-              required: true,
-              message: '请输入密码'
-            }]}
+            name="password"
+            label={
+              loginFormType === LoginFormType.UpdatePassword ? "新密码" : "密码"
+            }
+            rules={[
+              {
+                required: true,
+                message: "请输入密码",
+              },
+            ]}
             className={classNames("password !border-none !pb-1 ", {
-              '!mb-0': loginFormType === LoginFormType.Login
+              "!mb-0": loginFormType === LoginFormType.Login,
             })}
           >
             <Input.Password
               type="password"
               placeholder="请输入密码"
-              iconRender={(visible: boolean) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+              iconRender={(visible: boolean) =>
+                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+              }
               variant="borderless"
             />
-
           </Item>
-          {
-            loginFormType !== LoginFormType.Login && <Item
-              name='verificationCode'
-              label='验证码'
-              rules={[{
-                required: true,
-                message: '请输入验证码'
-              }]}
+          {loginFormType !== LoginFormType.Login && (
+            <Item
+              name="verificationCode"
+              label="验证码"
+              rules={[
+                {
+                  required: true,
+                  message: "请输入验证码",
+                },
+              ]}
               className="password border-none !pb-1 !mb-0 "
-
             >
-              <Input
-                placeholder="请输入验证码"
-                variant="borderless"
-              />
+              <Input placeholder="请输入验证码" variant="borderless" />
             </Item>
-          }
+          )}
         </Form>
         <Button
           className="p-[1em] !bg-[#3e4684] !text-[white] !border-none !rounded-[30px] !font-[600] hover:!bg-[rgba(62,70,132,0.8)]"
+          onClick={async () => {
+            const { email, password } = await form.getFieldsValue();
+            const res = await axios({
+              url: "/proxy-api/api/register",
+              method: "POST",
+              data: {
+                email: email,
+                password: password,
+              },
+              withCredentials: true,
+            });
+            console.log(res, "res");
+          }}
         >
           {BtnTextMapper[loginFormType]}
         </Button>
         <div className="footer">
-          {
-            loginFormType === LoginFormType.Register ? <Button
+          {loginFormType === LoginFormType.Register ? (
+            <Button
               color="default"
               variant="link"
               className="!px-0"
               onClick={() => {
-                setLoginFormType(LoginFormType.Login)
+                setLoginFormType(LoginFormType.Login);
               }}
             >
               已有账号？登录
-            </Button> :
-              <Button
-                color="default"
-                variant="link"
-                className="!px-0"
-                onClick={() => {
-                  setLoginFormType(LoginFormType.Register)
-                }}
-              >
-                注册
-              </Button>
-          }
+            </Button>
+          ) : (
+            <Button
+              color="default"
+              variant="link"
+              className="!px-0"
+              onClick={() => {
+                setLoginFormType(LoginFormType.Register);
+              }}
+            >
+              注册
+            </Button>
+          )}
 
-          {loginFormType !== LoginFormType.UpdatePassword ? <Button
-            color="default"
-            variant="link"
-            className="!px-0"
-            onClick={() => {
-              setLoginFormType(LoginFormType.UpdatePassword)
-            }}
-          >
-            忘记密码？
-          </Button> : <Button
-            color="default"
-            variant="link"
-            className="!px-0"
-            onClick={() => {
-              setLoginFormType(LoginFormType.Login)
-            }}
-          >
-            登录
-          </Button>
-          }
+          {loginFormType !== LoginFormType.UpdatePassword ? (
+            <Button
+              color="default"
+              variant="link"
+              className="!px-0"
+              onClick={() => {
+                setLoginFormType(LoginFormType.UpdatePassword);
+              }}
+            >
+              忘记密码？
+            </Button>
+          ) : (
+            <Button
+              color="default"
+              variant="link"
+              className="!px-0"
+              onClick={() => {
+                setLoginFormType(LoginFormType.Login);
+              }}
+            >
+              登录
+            </Button>
+          )}
         </div>
       </div>
     </div>
-
-  )
-
-})
+  );
+});

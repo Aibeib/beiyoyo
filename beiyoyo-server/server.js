@@ -5,7 +5,15 @@ const cors = require("cors");
 const path = require('path');
 const db = require('./db.js')
 const os = require('os')
-const {sendEmail} = require('./utils.js')
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
+const Snowflake = require('snowflake-id');
+
+const {
+  sendEmail,
+  generateSecretKey
+} = require('./utils.js')
+
 const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 分钟
@@ -56,6 +64,22 @@ app.use(express.json({ limit: '50mb' })); // 解析 JSON 请求体,请求体大�
 app.use(express.urlencoded({ extended: true,  limit: '50mb' }))
 app.use(cors(corsOptions))
 
+app.use(cookieParser());
+
+// 配置 Session
+app.use(
+  session({
+    secret: generateSecretKey(), // 用于签名 Session ID 的密钥（建议使用环境变量）
+    resave: false, // 是否每次请求都重新保存 Session（推荐 false）
+    saveUninitialized: false, // 是否保存未初始化的 Session（推荐 false）
+    cookie: {
+      httpOnly: true, // 防止 XSS 攻击（JS 无法读取 Cookie）
+      secure: false, // 是否仅 HTTPS 传输（生产环境建议 true）
+      maxAge: 1000 * 60 * 30, // Session 有效期（30 分钟）
+    },
+  })
+);
+
 
 
 // 4. 上传接口并写入数据库
@@ -86,6 +110,15 @@ app.post('/api/verification_code',async (req,res) => {
   console.log(resp, 'resp')
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify(resp))
+})
+
+app.post('/api/register',async (req,res) => {
+  const {email, password} = req.body
+  const snowflake = new Snowflake({ workerId: 1 });
+  const userID = snowflake.generate()
+  req.session.user = { email, role: "admin" };
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({code: 0,msg: '登录成功！'}))
 })
 
 
