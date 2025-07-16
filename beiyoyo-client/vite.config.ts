@@ -38,8 +38,7 @@ export default defineConfig(({mode})=>{
       host: '0.0.0.0', // 开发环境绑定域名，生产环境不限制
       port: 5173,
       strictPort: true,
-    },
-     proxy: {
+      proxy: {
       '/proxy-api': {
         target: `http://${getLocalIP()}:8181`, // 你本地的后端服务地址
         changeOrigin: true,
@@ -51,6 +50,8 @@ export default defineConfig(({mode})=>{
         },
       },
     },
+    },
+    
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src')

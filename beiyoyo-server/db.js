@@ -11,4 +11,4 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-module.exports = pool.promise(); // 使用 promise 支持 async/await
+module.exports = pool; // 使用 promise 支持 async/await

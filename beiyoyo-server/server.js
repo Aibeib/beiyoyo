@@ -1,15 +1,18 @@
 const express = require('express') 
 const app = express();
 const multer = require('multer');
+const cors = require("cors");
 const path = require('path');
 const db = require('./db.js')
 const os = require('os')
+const {sendEmail} = require('./utils.js')
+const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 分钟
   max: 100, // 限制每个 IP 100 个请求
   message: "请求过多，请稍后再试"
 });
-
+const port = process.env.PORT || 8181;
 const corsOptions = {
   // origin: /^(http:\/\/localhost:\d+)$/,
   origin: 'https://beiyoyo.cn',
@@ -53,6 +56,8 @@ app.use(express.json({ limit: '50mb' })); // 解析 JSON 请求体,请求体大�
 app.use(express.urlencoded({ extended: true,  limit: '50mb' }))
 app.use(cors(corsOptions))
 
+
+
 // 4. 上传接口并写入数据库
 app.post('/upload-avatar', upload.single('avatar'), (req, res) => {
   const username = req.body.username || 'default_user';
@@ -67,13 +72,23 @@ app.post('/upload-avatar', upload.single('avatar'), (req, res) => {
   db.query(sql, [username, imageUrl], (err, result) => {
     if (err) return res.status(500).json({ error: '数据库写入失败' });
 
-    res.json({
+    res.end({
       message: '上传成功',
       userId: result.insertId,
       avatar: imageUrl
     });
   });
 });
+
+app.post('/api/verification_code',async (req,res) => {
+  const {email} = req.body
+  const resp = await sendEmail(email)
+  console.log(resp, 'resp')
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(resp))
+})
+
+
 
 app.listen(port, '0.0.0.0', () => {  
   console.log(`Proxy server is listening on url http://${getLocalIP()}:${port}`);  
