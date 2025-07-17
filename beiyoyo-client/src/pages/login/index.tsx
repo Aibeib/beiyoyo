@@ -1,7 +1,7 @@
-import { Button, Form, Input, Image, Tooltip } from "antd";
+import { Button, Form, Input, Image, Tooltip, Space } from "antd";
 import { observer } from "mobx-react";
 import "./index.css";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import classNames from "classnames";
 import {
   EyeInvisibleOutlined,
@@ -12,6 +12,7 @@ import {
 import OneMinuteCountdown from "@/components/Countdown";
 import { BtnTextMapper, LoginFormType } from "./const";
 import axios from "axios";
+import getApi from '@/api/request'
 
 const { Item } = Form;
 
@@ -19,6 +20,7 @@ export const Login = observer(() => {
   const [loginFormType, setLoginFormType] = useState(LoginFormType.Login);
   const [isSended, setIsSended] = useState(false);
   const [form] = Form.useForm();
+  const [isShowPassword, setIsShowPassword] = useState(false)
 
   const mailSuffix = useMemo(() => {
     if (loginFormType !== LoginFormType.Login) {
@@ -27,6 +29,7 @@ export const Login = observer(() => {
           <OneMinuteCountdown
             deadline={15000}
             onFinish={() => setIsSended(false)}
+
           />
         );
       } else {
@@ -58,99 +61,148 @@ export const Login = observer(() => {
     return <MailOutlined className="!text-[#757575]" />;
   }, [form, isSended, loginFormType]);
 
+  useEffect(() => {
+    form.resetFields()
+  }, [loginFormType])
   return (
-    <div className="login-container overflow-auto ">
-      <div className="screen-1 min-h-[400px] flex justify-center w-[340px]">
+    <div className="login-container min-h-[800px] overflow-auto ">
+      <div className="screen-1 min-h-[400px]  flex justify-center w-[360px]">
         <Image
           rootClassName="!flex !justify-center !items-center"
           src="../../../public/logo_1.png"
           className="logo !w-[240px]"
           preview={false}
+
         />
-        <Form className="login-form w-full" layout="vertical" form={form}>
-          <Item
-            name="email"
-            label="邮箱"
-            rules={[
-              {
-                required: true,
-                message: "请输入邮箱",
-              },
-            ]}
-            className="email !pb-1 w-full"
-          >
-            <Input
-              placeholder="请输入邮箱"
-              className="w-full"
-              suffix={mailSuffix}
-              variant="borderless"
-            />
-          </Item>
-          <Item
-            name="password"
-            label={
-              loginFormType === LoginFormType.UpdatePassword ? "新密码" : "密码"
-            }
-            rules={[
-              {
-                required: true,
-                message: "请输入密码",
-              },
-            ]}
-            className={classNames("password !border-none !pb-1 ", {
-              "!mb-0": loginFormType === LoginFormType.Login,
-            })}
-          >
-            <Input.Password
-              type="password"
-              placeholder="请输入密码"
-              iconRender={(visible: boolean) =>
-                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-              }
-              variant="borderless"
-            />
-          </Item>
-          {loginFormType !== LoginFormType.Login && (
+        <Form
+          className="login-form w-full not-last:!mb-6"
+          layout="vertical"
+          form={form}
+          onValuesChange={(value, allValues) => {
+            const { password } = allValues
+            setIsShowPassword(password)
+          }}
+        >
+          <Space direction='vertical' className="w-full" size={24}  >
             <Item
-              name="verificationCode"
-              label="验证码"
+              name="email"
+              label="邮箱"
               rules={[
                 {
                   required: true,
-                  message: "请输入验证码",
+                  message: "请输入邮箱",
                 },
               ]}
-              className="password border-none !pb-1 !mb-0 "
+              className="email !pb-1 w-full !mb-0"
             >
-              <Input placeholder="请输入验证码" variant="borderless" />
+              <Input
+                placeholder="请输入邮箱"
+                className="w-full"
+                suffix={mailSuffix}
+                variant="borderless"
+              />
             </Item>
-          )}
+            <Item
+              name="password"
+              label={
+                loginFormType === LoginFormType.UpdatePassword ? "新密码" : "密码"
+              }
+              rules={[
+                {
+                  required: true,
+                  message: "请输入密码",
+                },
+              ]}
+              className={classNames("password !border-none !pb-1 !mb-0", {
+              })}
+            >
+              <Input.Password
+                type="password"
+                placeholder="请输入密码"
+                iconRender={(visible: boolean) =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
+                variant="borderless"
+              />
+            </Item>
+            {
+              loginFormType !== LoginFormType.Login && isShowPassword && <Item
+                name="confirmPassword"
+                label="确认密码"
+                rules={[
+                  {
+                    required: true,
+                    message: "请输入密码",
+                  },
+                ]}
+                className={classNames("password !border-none !pb-1 !mb-0", {
+                })}
+              >
+                <Input.Password
+                  type="password"
+                  placeholder="请再次输入密码"
+                  iconRender={(visible: boolean) =>
+                    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                  }
+                  variant="borderless"
+                  onChange={async (e) => {
+                    const confirmPwd = e.target.value
+                    const pwd = await form.getFieldValue('password')
+                    console.log(pwd !== confirmPwd, '===')
+
+                    if (pwd !== confirmPwd) {
+                      form.setFields([{ name: 'confirmPassword', errors: ['两次密码输入不一致！'] }])
+                    }
+                  }}
+                />
+              </Item>
+            }
+            {loginFormType !== LoginFormType.Login && (
+              <Item
+                name="verificationCode"
+                label="验证码"
+                rules={[
+                  {
+                    required: true,
+                    message: "请输入验证码",
+                  },
+                ]}
+                className="password border-none !pb-1 !mb-0"
+              >
+                <Input placeholder="请输入验证码" variant="borderless" />
+              </Item>
+            )}
+          </Space>
         </Form>
         <Button
           className="p-[1em] !bg-[#3e4684] !text-[white] !border-none !rounded-[30px] !font-[600] hover:!bg-[rgba(62,70,132,0.8)]"
           onClick={async () => {
-            const { email, password } = await form.getFieldsValue();
-            const res = await axios({
-              url: "/proxy-api/api/register",
-              method: "POST",
-              data: {
-                email: email,
-                password: password,
-              },
-              withCredentials: true,
-            });
+            const { email, password, verificationCode } = await form.getFieldsValue();
+            const res = await getApi.registerUser({ email, password, verificationCode })
+            console.log(res)
+            // const res = await axios({
+            //   url: "/proxy-api/api/register",
+            //   method: "POST",
+            //   data: {
+            //     email: email,
+            //     password: password,
+            //     verificationCode,
+            //   },
+            //   withCredentials: true,
+            // });
             console.log(res, "res");
           }}
         >
           {BtnTextMapper[loginFormType]}
         </Button>
-        <div className="footer">
+        <div className="footer mt-3">
           {loginFormType === LoginFormType.Register ? (
             <Button
               color="default"
               variant="link"
               className="!px-0"
-              onClick={() => {
+              onClick={async () => {
+
                 setLoginFormType(LoginFormType.Login);
               }}
             >
@@ -161,7 +213,7 @@ export const Login = observer(() => {
               color="default"
               variant="link"
               className="!px-0"
-              onClick={() => {
+              onClick={async () => {
                 setLoginFormType(LoginFormType.Register);
               }}
             >
@@ -174,7 +226,8 @@ export const Login = observer(() => {
               color="default"
               variant="link"
               className="!px-0"
-              onClick={() => {
+              onClick={async () => {
+
                 setLoginFormType(LoginFormType.UpdatePassword);
               }}
             >
@@ -185,7 +238,7 @@ export const Login = observer(() => {
               color="default"
               variant="link"
               className="!px-0"
-              onClick={() => {
+              onClick={async () => {
                 setLoginFormType(LoginFormType.Login);
               }}
             >

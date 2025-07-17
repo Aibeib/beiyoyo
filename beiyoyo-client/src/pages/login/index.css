@@ -40,7 +40,6 @@
   flex-direction: column;
   border-radius: 30px;
   box-shadow: 0 0 2em #e6e9f9;
-  gap: 2em;
   overflow: scroll;
   .logo {
     margin-top: -3em;

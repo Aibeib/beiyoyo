@@ -7,11 +7,12 @@ const db = require('./db.js')
 const os = require('os')
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
-const Snowflake = require('snowflake-id');
-
+const Snowflake = require('snowflake-id').default;
 const {
   sendEmail,
-  generateSecretKey
+  generateSecretKey,
+  checkCode,
+  checkUserExists
 } = require('./utils.js')
 
 const rateLimit = require('express-rate-limit');
@@ -113,12 +114,42 @@ app.post('/api/verification_code',async (req,res) => {
 })
 
 app.post('/api/register',async (req,res) => {
-  const {email, password} = req.body
+  const {email, password, verificationCode} = req.body
+  const resp = await checkCode(verificationCode)
+  if(resp.code !== 0) {
+    res.end(JSON.stringify(resp))
+    return 
+  }
   const snowflake = new Snowflake({ workerId: 1 });
-  const userID = snowflake.generate()
-  req.session.user = { email, role: "admin" };
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({code: 0,msg: '登录成功！'}))
+  const userID = snowflake.generate().toString()
+
+  const userIsExist = await checkUserExists(email)
+
+  if(userIsExist) {
+    res.json({
+      code: 10001,
+      message: '该用户已经存在可直接登录',
+      data:{}
+    }
+    )
+  } else {
+    const now = Date.now(); // 当前时间戳（毫秒）
+    const expiresIn = (now + 7 * 24 * 60 * 60 * 1000)/1000; // 加上 7 天的毫秒数
+    try{
+      await db.query('INSERT INTO users (userID,userName, password, expiresIn) VALUES (?, ?,?,?)', [userID,email, password, expiresIn]);
+      req.session.user = { email,userID, role: "admin" };
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({code: 0,msg: '注册成功！',data: {userID}}))
+
+    }catch(e){
+        res.json({
+        code:10002,
+        message: `注册失败:${e}`,
+        data:{}
+      })
+    }
+  }
+ 
 })
 
 
