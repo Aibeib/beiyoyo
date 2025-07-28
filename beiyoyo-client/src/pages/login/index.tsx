@@ -10,10 +10,10 @@ import {
   MailOutlined,
   SendOutlined,
 } from "@ant-design/icons";
-import OneMinuteCountdown from "@/components/Countdown";
+import OneMinuteCountdown from "@/components/countdown";
 import { BtnTextMapper, LoginFormType } from "./const";
 import axios from "axios";
-import getApi from '@/api/request'
+import getApi from "@/api/request";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "@/context";
 
@@ -23,10 +23,10 @@ export const Login = observer(() => {
   const [loginFormType, setLoginFormType] = useState(LoginFormType.Login);
   const [isSended, setIsSended] = useState(false);
   const [form] = Form.useForm();
-  const [isShowPassword, setIsShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [isShowPassword, setIsShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const { state } = useAppContext()
+  const { state } = useAppContext();
 
   const navigate = useNavigate();
 
@@ -37,7 +37,6 @@ export const Login = observer(() => {
           <OneMinuteCountdown
             deadline={15000}
             onFinish={() => setIsSended(false)}
-
           />
         );
       } else {
@@ -70,8 +69,8 @@ export const Login = observer(() => {
   }, [form, isSended, loginFormType]);
 
   useEffect(() => {
-    form.resetFields()
-  }, [loginFormType])
+    form.resetFields();
+  }, [loginFormType]);
 
   return (
     <div className="login-container min-h-[800px] overflow-auto ">
@@ -81,18 +80,17 @@ export const Login = observer(() => {
           src="../../../public/logo_1.png"
           className="logo !w-[240px]"
           preview={false}
-
         />
         <Form
           className="login-form w-full not-last:!mb-6"
           layout="vertical"
           form={form}
-          onValuesChange={(value, allValues) => {
-            const { password } = allValues
-            setIsShowPassword(password)
+          onValuesChange={(_, allValues) => {
+            const { password } = allValues;
+            setIsShowPassword(password);
           }}
         >
-          <Space direction='vertical' className="w-full" size={24}  >
+          <Space direction="vertical" className="w-full" size={24}>
             <Item
               name="email"
               label="邮箱"
@@ -114,7 +112,9 @@ export const Login = observer(() => {
             <Item
               name="password"
               label={
-                loginFormType === LoginFormType.UpdatePassword ? "新密码" : "密码"
+                loginFormType === LoginFormType.UpdatePassword
+                  ? "新密码"
+                  : "密码"
               }
               rules={[
                 {
@@ -122,8 +122,7 @@ export const Login = observer(() => {
                   message: "请输入密码",
                 },
               ]}
-              className={classNames("password !border-none !pb-1 !mb-0", {
-              })}
+              className={classNames("password !border-none !pb-1 !mb-0", {})}
             >
               <Input.Password
                 type="password"
@@ -134,8 +133,8 @@ export const Login = observer(() => {
                 variant="borderless"
               />
             </Item>
-            {
-              loginFormType !== LoginFormType.Login && isShowPassword && <Item
+            {loginFormType !== LoginFormType.Login && isShowPassword && (
+              <Item
                 name="confirmPassword"
                 label="确认密码"
                 rules={[
@@ -144,8 +143,7 @@ export const Login = observer(() => {
                     message: "请输入密码",
                   },
                 ]}
-                className={classNames("password !border-none !pb-1 !mb-0", {
-                })}
+                className={classNames("password !border-none !pb-1 !mb-0", {})}
               >
                 <Input.Password
                   type="password"
@@ -155,15 +153,20 @@ export const Login = observer(() => {
                   }
                   variant="borderless"
                   onChange={async (e) => {
-                    const confirmPwd = e.target.value
-                    const pwd = await form.getFieldValue('password')
+                    const confirmPwd = e.target.value;
+                    const pwd = await form.getFieldValue("password");
                     if (pwd !== confirmPwd) {
-                      form.setFields([{ name: 'confirmPassword', errors: ['两次密码输入不一致！'] }])
+                      form.setFields([
+                        {
+                          name: "confirmPassword",
+                          errors: ["两次密码输入不一致！"],
+                        },
+                      ]);
                     }
                   }}
                 />
               </Item>
-            }
+            )}
             {loginFormType !== LoginFormType.Login && (
               <Item
                 name="verificationCode"
@@ -184,29 +187,37 @@ export const Login = observer(() => {
         <Button
           className="create-btn p-[1em] !bg-[#3e4684] !text-[white] !border-none !rounded-[30px] !font-[600] hover:!bg-[rgba(62,70,132,0.8)] !flex !items-center !justify-center"
           onClick={async () => {
-            const { email, password, verificationCode } = await form.getFieldsValue();
+            const { email, password, verificationCode } =
+              await form.getFieldsValue();
             try {
-              setLoading(true)
+              setLoading(true);
               if (loginFormType === LoginFormType.Register) {
-                await getApi.registerUser({ email, password, verificationCode })
-                setLoading(false)
-                setLoginFormType(LoginFormType.Login)
+                await getApi.registerUser({
+                  email,
+                  password,
+                  verificationCode,
+                });
+                setLoading(false);
+                setLoginFormType(LoginFormType.Login);
               } else if (loginFormType === LoginFormType.Login) {
-                await getApi.login({ email, password })
-                setLoading(false)
-                state.messageApi.success('登录成功！')
-                navigate('/home')
+                await getApi.login({ email, password });
+                setLoading(false);
+                state.messageApi.success("登录成功！");
+                navigate("/home");
               } else {
-                await getApi.registerUser({ email, password, verificationCode })
-                setLoading(false)
-                setLoginFormType(LoginFormType.Login)
+                await getApi.registerUser({
+                  email,
+                  password,
+                  verificationCode,
+                });
+                setLoading(false);
+                setLoginFormType(LoginFormType.Login);
               }
             } catch (e: any) {
-              console.error(e)
-              setLoading(false)
-              state.messageApi.error(e.message)
+              console.error(e);
+              setLoading(false);
+              state.messageApi.error(e.message);
             }
-
           }}
           loading={loading}
         >
@@ -219,7 +230,6 @@ export const Login = observer(() => {
               variant="link"
               className="!px-0"
               onClick={async () => {
-
                 setLoginFormType(LoginFormType.Login);
               }}
             >
@@ -244,7 +254,6 @@ export const Login = observer(() => {
               variant="link"
               className="!px-0"
               onClick={async () => {
-
                 setLoginFormType(LoginFormType.UpdatePassword);
               }}
             >
@@ -264,6 +273,6 @@ export const Login = observer(() => {
           )}
         </div>
       </div>
-    </div >
+    </div>
   );
 });

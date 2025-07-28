@@ -14,7 +14,7 @@ const routes = [
 
     children: [
       {
-        path: "home",
+        path: "aibei",
         element: <PhotoList />,
         meta: { title: "首页", requiresAuth: true },
       },
