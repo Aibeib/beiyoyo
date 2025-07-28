@@ -1,4 +1,4 @@
-export const registerUserUrl = '/register'
+export const registerUserUrl = '/api/register'
 export interface RegisterUserReq {
   email: string,
   password: string,

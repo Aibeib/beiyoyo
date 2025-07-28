@@ -1,10 +1,9 @@
- import axios from 'axios'
+import axios from 'axios'
 
  const service = axios.create({
   baseURL: '/proxy-api',
   timeout: 120000
  })
-
 
 // 请求拦截器
  service.interceptors.request.use((config) => {
@@ -32,6 +31,7 @@ service.interceptors.response.use(
   (error) => {
     // 错误处理
     const status = error.response?.status;
+    console.log(error, 'error')
     if (status === 401) {
       // 未登录/登录失效
       console.warn('登录已过期，请重新登录');

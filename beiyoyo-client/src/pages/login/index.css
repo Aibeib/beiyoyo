@@ -79,3 +79,10 @@
   }
 }
 
+.create-btn {
+  .ant-btn-loading-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}

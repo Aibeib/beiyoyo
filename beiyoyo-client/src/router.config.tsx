@@ -1,6 +1,4 @@
-// routes/index.tsx
 import Page from "@/pages/index";
-import { ProtectedRoute } from "./routes/projectRoute";
 import { Login } from "./pages/login";
 import { PhotoList } from "./components/photoList";
 
@@ -11,7 +9,9 @@ const routes = [
   },
   {
     path: "/",
-    element: <ProtectedRoute><Page /></ProtectedRoute>,
+    // element: <ProtectedRoute><Page /></ProtectedRoute>,
+    element: <Page />,
+
     children: [
       {
         path: "home",

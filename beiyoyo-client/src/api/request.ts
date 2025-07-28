@@ -5,6 +5,7 @@ import {
   type RegisterUserReq, 
   type RegisterUserResp 
 } from "./registerUser";
+import { loginUrl, type LoginReq, type LoginResp } from "./login";
 class getApi {
  private request: AxiosInstance
   constructor() {
@@ -14,6 +15,14 @@ class getApi {
   registerUser = (params: RegisterUserReq): Promise<RegisterUserResp> => {
     return this.request({
       url: registerUserUrl,
+      method: 'POST',
+      data: params
+    })
+  }
+
+  login = (params: LoginReq): Promise<LoginResp> => {
+    return this.request({
+      url: loginUrl,
       method: 'POST',
       data: params
     })

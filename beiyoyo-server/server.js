@@ -12,7 +12,9 @@ const {
   sendEmail,
   generateSecretKey,
   checkCode,
-  checkUserExists
+  checkUserExists,
+  hashPassword,
+  checkLoginUser
 } = require('./utils.js')
 
 const rateLimit = require('express-rate-limit');
@@ -115,7 +117,7 @@ app.post('/api/verification_code',async (req,res) => {
 
 app.post('/api/register',async (req,res) => {
   const {email, password, verificationCode} = req.body
-  const resp = await checkCode(verificationCode)
+  const resp = await checkCode(email,verificationCode)
   if(resp.code !== 0) {
     res.end(JSON.stringify(resp))
     return 
@@ -136,9 +138,11 @@ app.post('/api/register',async (req,res) => {
     const now = Date.now(); // 当前时间戳（毫秒）
     const expiresIn = (now + 7 * 24 * 60 * 60 * 1000)/1000; // 加上 7 天的毫秒数
     try{
-      await db.query('INSERT INTO users (userID,userName, password, expiresIn) VALUES (?, ?,?,?)', [userID,email, password, expiresIn]);
+      const encryptionPassword = await hashPassword(password)
+      console.log(encryptionPassword, 'encryptionPassword')
+      await db.query('INSERT INTO users (userID, userName, password, expiresIn) VALUES (?,?,?,?)', [userID, email, encryptionPassword, expiresIn]);
       req.session.user = { email,userID, role: "admin" };
-      res.writeHead(200, { "Content-Type": "application/json" });
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
       res.end(JSON.stringify({code: 0,msg: '注册成功！',data: {userID}}))
 
     }catch(e){
@@ -150,6 +154,29 @@ app.post('/api/register',async (req,res) => {
     }
   }
  
+})
+
+app.post('/api/login',async (req,res)=> {
+  const {email, password} = req.body
+  const user = await checkLoginUser(email, password)
+  if(!user){
+    res.json({
+      code: 10003,
+      message: '账号密码错误，请检查后重新输入！',
+      data:{}
+    }
+    )
+  } else {
+     res.json({
+      code: 0,
+      message: '',
+      data:{
+        user: { }
+      }
+    }
+    )
+  }
+  
 })
 
 

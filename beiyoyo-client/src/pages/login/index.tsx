@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Form, Input, Image, Tooltip, Space } from "antd";
 import { observer } from "mobx-react";
 import "./index.css";
@@ -13,6 +14,8 @@ import OneMinuteCountdown from "@/components/Countdown";
 import { BtnTextMapper, LoginFormType } from "./const";
 import axios from "axios";
 import getApi from '@/api/request'
+import { useNavigate } from "react-router-dom";
+import { useAppContext } from "@/context";
 
 const { Item } = Form;
 
@@ -21,6 +24,11 @@ export const Login = observer(() => {
   const [isSended, setIsSended] = useState(false);
   const [form] = Form.useForm();
   const [isShowPassword, setIsShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const { state } = useAppContext()
+
+  const navigate = useNavigate();
 
   const mailSuffix = useMemo(() => {
     if (loginFormType !== LoginFormType.Login) {
@@ -64,6 +72,7 @@ export const Login = observer(() => {
   useEffect(() => {
     form.resetFields()
   }, [loginFormType])
+
   return (
     <div className="login-container min-h-[800px] overflow-auto ">
       <div className="screen-1 min-h-[400px]  flex justify-center w-[360px]">
@@ -148,8 +157,6 @@ export const Login = observer(() => {
                   onChange={async (e) => {
                     const confirmPwd = e.target.value
                     const pwd = await form.getFieldValue('password')
-                    console.log(pwd !== confirmPwd, '===')
-
                     if (pwd !== confirmPwd) {
                       form.setFields([{ name: 'confirmPassword', errors: ['两次密码输入不一致！'] }])
                     }
@@ -175,23 +182,33 @@ export const Login = observer(() => {
           </Space>
         </Form>
         <Button
-          className="p-[1em] !bg-[#3e4684] !text-[white] !border-none !rounded-[30px] !font-[600] hover:!bg-[rgba(62,70,132,0.8)]"
+          className="create-btn p-[1em] !bg-[#3e4684] !text-[white] !border-none !rounded-[30px] !font-[600] hover:!bg-[rgba(62,70,132,0.8)] !flex !items-center !justify-center"
           onClick={async () => {
             const { email, password, verificationCode } = await form.getFieldsValue();
-            const res = await getApi.registerUser({ email, password, verificationCode })
-            console.log(res)
-            // const res = await axios({
-            //   url: "/proxy-api/api/register",
-            //   method: "POST",
-            //   data: {
-            //     email: email,
-            //     password: password,
-            //     verificationCode,
-            //   },
-            //   withCredentials: true,
-            // });
-            console.log(res, "res");
+            try {
+              setLoading(true)
+              if (loginFormType === LoginFormType.Register) {
+                await getApi.registerUser({ email, password, verificationCode })
+                setLoading(false)
+                setLoginFormType(LoginFormType.Login)
+              } else if (loginFormType === LoginFormType.Login) {
+                await getApi.login({ email, password })
+                setLoading(false)
+                state.messageApi.success('登录成功！')
+                navigate('/home')
+              } else {
+                await getApi.registerUser({ email, password, verificationCode })
+                setLoading(false)
+                setLoginFormType(LoginFormType.Login)
+              }
+            } catch (e: any) {
+              console.error(e)
+              setLoading(false)
+              state.messageApi.error(e.message)
+            }
+
           }}
+          loading={loading}
         >
           {BtnTextMapper[loginFormType]}
         </Button>
@@ -247,6 +264,6 @@ export const Login = observer(() => {
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 });

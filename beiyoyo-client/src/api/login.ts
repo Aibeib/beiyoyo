@@ -1,4 +1,4 @@
-export const loginUrl = '/login'
+export const loginUrl = '/api/login'
 export interface LoginReq{
   email: string,
   password: string
