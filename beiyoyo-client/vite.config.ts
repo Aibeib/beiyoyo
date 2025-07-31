@@ -2,19 +2,15 @@ import { defineConfig,loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path, {dirname} from 'path';
-
 import os from 'os';
+
+
 // Node.js ESM 中替代 __dirname 的方法：
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-// https://vite.dev/config/
-export default defineConfig(({mode})=>{
-
-  const env = loadEnv(mode, process.cwd());
-  function getLocalIP() {
+function getLocalIP() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const interfaces: any = os.networkInterfaces() ;
   for (const name in interfaces) {
@@ -27,6 +23,10 @@ export default defineConfig(({mode})=>{
   }
   return '127.0.0.1'; // fallback
 }
+// https://vite.dev/config/
+export default defineConfig(({mode})=>{
+
+  const env = loadEnv(mode, process.cwd());
 
   console.log(env,'env')
   return {

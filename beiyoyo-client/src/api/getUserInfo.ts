@@ -1,15 +1,19 @@
-export const getUserInfoURL = '/api/get/userInfo'
-export interface GetUserInfoReq {}
+export const getUserInfoURL = '/api/get/user'
+
+export interface GetUserInfoReq {
+  userID: string
+}
 
 export type User = {
-  name: string,
-  id: string,
+  nickName: string,
+  userID: string,
   avatar: string,
+  userName: string
 }
 export interface GetUserInfoResp{
   code: number,
   message: string,
   data:{
-    user:User
+    user: User
   }
 }

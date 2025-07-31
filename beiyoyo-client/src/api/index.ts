@@ -1,3 +1,4 @@
+import { message } from 'antd';
 import axios from 'axios'
 
  const service = axios.create({
@@ -34,7 +35,9 @@ service.interceptors.response.use(
     console.log(error, 'error')
     if (status === 401) {
       // 未登录/登录失效
+      window.location.href = '/login';
       console.warn('登录已过期，请重新登录');
+      message.warning('登录已过期，请重新登录')
       // 清除本地 token，跳转登录页等
     } else if (status >= 500) {
       console.error('服务器错误');

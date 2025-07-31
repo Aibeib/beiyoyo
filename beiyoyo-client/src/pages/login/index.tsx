@@ -10,12 +10,13 @@ import {
   MailOutlined,
   SendOutlined,
 } from "@ant-design/icons";
-import OneMinuteCountdown from "@/components/countdown";
+import OneMinuteCountdown from "@/components/countDown";
 import { BtnTextMapper, LoginFormType } from "./const";
 import axios from "axios";
 import getApi from "@/api/request";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "@/context";
+import userStore from "@/store/userStore";
 
 const { Item } = Form;
 
@@ -25,8 +26,9 @@ export const Login = observer(() => {
   const [form] = Form.useForm();
   const [isShowPassword, setIsShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { login, registerUser } = userStore
 
-  const { state } = useAppContext();
+  const { messageApi } = useAppContext();
 
   const navigate = useNavigate();
 
@@ -87,7 +89,7 @@ export const Login = observer(() => {
           form={form}
           onValuesChange={(_, allValues) => {
             const { password } = allValues;
-            setIsShowPassword(password);
+            setIsShowPassword(!!password);
           }}
         >
           <Space direction="vertical" className="w-full" size={24}>
@@ -192,18 +194,15 @@ export const Login = observer(() => {
             try {
               setLoading(true);
               if (loginFormType === LoginFormType.Register) {
-                await getApi.registerUser({
-                  email,
-                  password,
-                  verificationCode,
-                });
+                await registerUser({ email, password, verificationCode })
                 setLoading(false);
                 setLoginFormType(LoginFormType.Login);
+                messageApi.success("注册成功！请登录");
               } else if (loginFormType === LoginFormType.Login) {
-                await getApi.login({ email, password });
+                await login({ email, password })
                 setLoading(false);
-                state.messageApi.success("登录成功！");
-                navigate("/home");
+                messageApi.success("登录成功！");
+                navigate("/aibei");
               } else {
                 await getApi.registerUser({
                   email,
@@ -216,7 +215,7 @@ export const Login = observer(() => {
             } catch (e: any) {
               console.error(e);
               setLoading(false);
-              state.messageApi.error(e.message);
+              messageApi.error(e.message);
             }
           }}
           loading={loading}
@@ -231,6 +230,7 @@ export const Login = observer(() => {
               className="!px-0"
               onClick={async () => {
                 setLoginFormType(LoginFormType.Login);
+                setIsShowPassword(false)
               }}
             >
               已有账号？登录
@@ -242,6 +242,7 @@ export const Login = observer(() => {
               className="!px-0"
               onClick={async () => {
                 setLoginFormType(LoginFormType.Register);
+                setIsShowPassword(false)
               }}
             >
               注册
@@ -255,6 +256,7 @@ export const Login = observer(() => {
               className="!px-0"
               onClick={async () => {
                 setLoginFormType(LoginFormType.UpdatePassword);
+                setIsShowPassword(false)
               }}
             >
               忘记密码？
@@ -266,6 +268,7 @@ export const Login = observer(() => {
               className="!px-0"
               onClick={async () => {
                 setLoginFormType(LoginFormType.Login);
+                setIsShowPassword(false)
               }}
             >
               登录

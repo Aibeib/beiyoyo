@@ -7,17 +7,22 @@ const db = require('./db.js')
 const os = require('os')
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
+const fs = require('fs');
 const Snowflake = require('snowflake-id').default;
+const { v4: uuidv4 } = require('uuid');
+
 const {
   sendEmail,
   generateSecretKey,
   checkCode,
   checkUserExists,
   hashPassword,
-  checkLoginUser
+  checkLoginUser,
+  getUserInfo
 } = require('./utils.js')
 
 const rateLimit = require('express-rate-limit');
+
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 分钟
   max: 100, // 限制每个 IP 100 个请求
@@ -30,6 +35,10 @@ const corsOptions = {
   optionsSuccessStatus: 200,
   credentials: true
 };
+
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
 
 function getLocalIP() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,7 +58,7 @@ function getLocalIP() {
 // 1. 设置 multer 存储位置
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/');
+    cb(null, 'images/');
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
@@ -60,7 +69,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // 2. 设置静态文件访问
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use(limiter);
 app.use(express.json({ limit: '50mb' })); // 解析 JSON 请求体,请求体大小限制
@@ -86,13 +95,13 @@ app.use(
 
 
 // 4. 上传接口并写入数据库
-app.post('/upload-avatar', upload.single('avatar'), (req, res) => {
+app.put('/update/userInfo', upload.single('avatar'), (req, res) => {
   const username = req.body.username || 'default_user';
   if (!req.file) {
     return res.status(400).json({ error: '没有上传文件' });
   }
 
-  const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+  const imageUrl = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
 
   const sql = 'INSERT INTO users (username, avatar_url) VALUES (?, ?)';
 
@@ -119,7 +128,7 @@ app.post('/api/register',async (req,res) => {
   const {email, password, verificationCode} = req.body
   const resp = await checkCode(email,verificationCode)
   if(resp.code !== 0) {
-    res.end(JSON.stringify(resp))
+    res.json(resp)
     return 
   }
   const snowflake = new Snowflake({ workerId: 1 });
@@ -139,8 +148,8 @@ app.post('/api/register',async (req,res) => {
     const expiresIn = (now + 7 * 24 * 60 * 60 * 1000)/1000; // 加上 7 天的毫秒数
     try{
       const encryptionPassword = await hashPassword(password)
-      console.log(encryptionPassword, 'encryptionPassword')
-      await db.query('INSERT INTO users (userID, userName, password, expiresIn) VALUES (?,?,?,?)', [userID, email, encryptionPassword, expiresIn]);
+      const defaultAvatar = `${req.protocol}://${req.get('host')}/images/avatar.jpeg`
+      await db.query('INSERT INTO users (userID, userName, avatar, password, createAt, role, nickName) VALUES (?,?,?,?,?,?,?)', [userID, email, defaultAvatar,encryptionPassword, now, 'admin', 'test-001']);
       req.session.user = { email,userID, role: "admin" };
       res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
       res.end(JSON.stringify({code: 0,msg: '注册成功！',data: {userID}}))
@@ -164,19 +173,31 @@ app.post('/api/login',async (req,res)=> {
       code: 10003,
       message: '账号密码错误，请检查后重新输入！',
       data:{}
-    }
-    )
+    })
   } else {
      res.json({
       code: 0,
       message: '',
       data:{
-        user: { }
+        userID: user.userID
       }
-    }
-    )
+    })
   }
-  
+})
+
+app.get('/api/get/user',async(req,res)=> {
+   const { userInfo } = req.session
+   if(!userInfo){
+    return res.status(401).json({ message: '登录过期' });
+   }
+   const user = await getUserInfo(userInfo.userID)
+    res.json({
+      code: 0,
+      message: '',
+      data:{
+        user: user
+      }
+    })
 })
 
 

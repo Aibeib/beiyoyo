@@ -5,5 +5,7 @@ export interface LoginReq{
 }
 export interface LoginResp {
   code: number,
-  data: object
+  data: {
+    userID: string
+  }
 }

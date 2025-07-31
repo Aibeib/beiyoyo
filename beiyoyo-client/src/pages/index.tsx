@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Layout, theme, Avatar, Input } from "antd";
 import "./index.less";
 import { UserInfo } from "./userInfo";
 import { Outlet } from "react-router-dom";
+import userStore from "@/store/userStore";
 
 const { Header, Content, Footer } = Layout;
 
@@ -11,11 +12,15 @@ const { Header, Content, Footer } = Layout;
 //   label: `nav ${index + 1}`,
 // }));
 
+
 const Page: React.FC = () => {
   const {
     token: { borderRadiusLG, colorBgContainer },
   } = theme.useToken();
-
+  const { getUserInfo } = userStore
+  useEffect(() => {
+    getUserInfo()
+  }, [])
   return (
     <Layout className="">
       <Header
@@ -38,7 +43,7 @@ const Page: React.FC = () => {
         />
         <div className="w-[calc(100%-32px)] flex justify-end ">
           <div className="mr-4">
-            <Input className="" />
+            <Input className="h-8" />
           </div>
           <div className="ml-3 flex items-center cursor-pointer">
             <UserInfo />
