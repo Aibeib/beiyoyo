@@ -17,10 +17,15 @@ const Page: React.FC = () => {
   const {
     token: { borderRadiusLG, colorBgContainer },
   } = theme.useToken();
-  const { getUserInfo } = userStore
+  const { init } = userStore
   useEffect(() => {
-    getUserInfo()
+    initialPhoto()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const initialPhoto = async () => {
+    await init()
+  }
   return (
     <Layout className="">
       <Header

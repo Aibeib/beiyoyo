@@ -12,6 +12,7 @@ import axios from 'axios'
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`; // 设置 token
     }
+    config.withCredentials = true;
     return config;
   },
   (error) => {
@@ -32,7 +33,7 @@ service.interceptors.response.use(
   (error) => {
     // 错误处理
     const status = error.response?.status;
-    console.log(error, 'error')
+    console.log(status, 'error')
     if (status === 401) {
       // 未登录/登录失效
       window.location.href = '/login';

@@ -1,14 +1,17 @@
 import { observer } from "mobx-react";
 import { PhotoCard } from "../photoCard";
 import { Col, Row } from "antd";
+import userStore from "@/store/userStore";
 
 export const PhotoList = observer(() => {
-  const dataList = new Array(1).fill("");
+  const { photoList } = userStore
+
   return (
     <div className="my-0 mx-auto ">
       <Row gutter={[25, 16]} justify="start">
         {/* <div className="w-full grid  gap-6 grid-cols-[repeat(auto-fit,minmax(200px,1fr))] my-0 mx-auto justify-center"> */}
-        {dataList.map((_, index) => {
+        <PhotoCard isNewAdd={true} />
+        {photoList.map((photo, index) => {
           return (
             <Col
               key={index}
@@ -19,7 +22,7 @@ export const PhotoList = observer(() => {
               xl={{ flex: "10%" }}
               className=" "
             >
-              <PhotoCard isNewAdd={index === 0} />
+              <PhotoCard photo={photo} isNewAdd={false} />
             </Col>
           );
         })}

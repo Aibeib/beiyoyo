@@ -7,6 +7,8 @@ import {
 } from "./registerUser";
 import { loginUrl, type LoginReq, type LoginResp } from "./login";
 import { getUserInfoURL, type GetUserInfoReq, type GetUserInfoResp } from "./getUserInfo";
+import { uploadPicURL, type UploadPicReq, type UploadPicResp } from "./uploadPic";
+import { getPhotoListURL, type GetPhotoListReq, type GetPhotoListResp } from "./getPhotoList";
 class getApi {
  private request: AxiosInstance
   constructor() {
@@ -34,6 +36,26 @@ class getApi {
       url: getUserInfoURL,
       method: 'GET',
       params
+    })
+  }
+  uploadPic = (params: UploadPicReq): Promise<UploadPicResp> => {
+    const formData = new FormData()
+    console.log(params.photo,'params.photo')
+    formData.append('subject', params.subject)
+    formData.append('description', params.description)
+    formData.append('photo',params.photo)
+    return this.request({
+      url: uploadPicURL,
+      method: 'POST',
+      data: formData
+    })
+  }
+
+  getPhotoList = (params?: GetPhotoListReq): Promise<GetPhotoListResp> =>{
+    return this.request({
+      url: getPhotoListURL,
+      method: 'GET',
+      params: params
     })
   }
 }

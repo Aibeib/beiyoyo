@@ -30,8 +30,8 @@ const limiter = rateLimit({
 });
 const port = process.env.PORT || 8181;
 const corsOptions = {
-  // origin: /^(http:\/\/localhost:\d+)$/,
-  origin: 'https://beiyoyo.cn',
+  origin: /^(http:\/\/localhost:\d+)$/,
+  // origin: 'https://beiyoyo.cn',
   optionsSuccessStatus: 200,
   credentials: true
 };
@@ -68,6 +68,8 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+
+
 // 2. 设置静态文件访问
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
@@ -81,13 +83,13 @@ app.use(cookieParser());
 // 配置 Session
 app.use(
   session({
-    secret: generateSecretKey(), // 用于签名 Session ID 的密钥（建议使用环境变量）
+    secret: '8630788440c165c445255fba3ea8530d850b6d432fec5d713d2e746c598df943', // 用于签名 Session ID 的密钥（建议使用环境变量）
     resave: false, // 是否每次请求都重新保存 Session（推荐 false）
     saveUninitialized: false, // 是否保存未初始化的 Session（推荐 false）
     cookie: {
       httpOnly: true, // 防止 XSS 攻击（JS 无法读取 Cookie）
       secure: false, // 是否仅 HTTPS 传输（生产环境建议 true）
-      maxAge: 1000 * 60 * 30, // Session 有效期（30 分钟）
+      maxAge: 1000 * 60 * 60 * 24 * 7, // Session 有效期（30 分钟）
     },
   })
 );
@@ -107,7 +109,6 @@ app.put('/update/userInfo', upload.single('avatar'), (req, res) => {
 
   db.query(sql, [username, imageUrl], (err, result) => {
     if (err) return res.status(500).json({ error: '数据库写入失败' });
-
     res.end({
       message: '上传成功',
       userId: result.insertId,
@@ -119,7 +120,6 @@ app.put('/update/userInfo', upload.single('avatar'), (req, res) => {
 app.post('/api/verification_code',async (req,res) => {
   const {email} = req.body
   const resp = await sendEmail(email)
-  console.log(resp, 'resp')
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify(resp))
 })
@@ -168,6 +168,7 @@ app.post('/api/register',async (req,res) => {
 app.post('/api/login',async (req,res)=> {
   const {email, password} = req.body
   const user = await checkLoginUser(email, password)
+  
   if(!user){
     res.json({
       code: 10003,
@@ -175,6 +176,7 @@ app.post('/api/login',async (req,res)=> {
       data:{}
     })
   } else {
+     req.session.user = { email: user.userName ,userID: user.userID, role: "admin" };
      res.json({
       code: 0,
       message: '',
@@ -186,7 +188,7 @@ app.post('/api/login',async (req,res)=> {
 })
 
 app.get('/api/get/user',async(req,res)=> {
-   const { userInfo } = req.session
+   const { user: userInfo } = req.session
    if(!userInfo){
     return res.status(401).json({ message: '登录过期' });
    }
@@ -200,6 +202,36 @@ app.get('/api/get/user',async(req,res)=> {
     })
 })
 
+app.post('/api/upload/photo',upload.single('photo'), async(req,res) => {
+  const imageUrl = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
+  const { user: userInfo } = req.session
+  const {subject, description} = req.body
+  const now = Date.now()
+  const sql = 'INSERT INTO photo (userID, picUrl, subject, description, createAt) VALUES (?,?,?,?,?)';
+
+  await db.query(sql, [userInfo.userID, imageUrl,subject,description, now], (err, result) => {
+    if (err) return res.status(500).json({ error: '数据库写入失败' });
+  });
+  res.json({
+      code: 0,
+      message: '上传成功',
+      data: {
+        picUrl: imageUrl
+      }
+  });
+})
+
+app.get('/api/getPhotoList',async (req,res)=> {
+  const {userID} = req.session.user
+  const [photoList] = await db.query('SELECT * FROM photo WHERE userID = ?', [userID])
+  res.json({
+    code: 0,
+    message: '',
+    data: {
+      photoList: photoList
+    }
+  })
+})
 
 
 app.listen(port, '0.0.0.0', () => {  

@@ -1,46 +1,92 @@
-import { InboxOutlined } from "@ant-design/icons"
-import { message, Modal, type UploadProps } from "antd"
-import Dragger from "antd/es/upload/Dragger"
+import { PlusOutlined } from "@ant-design/icons"
+import { Form, Input, Modal, Upload, } from "antd"
+import userStore from "@/store/userStore"
+import { useState } from "react"
+import { useAppContext } from "@/context"
 type Props = {
   visible: boolean
-  onCancel: (visible: boolean) => void
-
+  onCancel: () => void
+}
+type FormValue = {
+  subject: string,
+  description: string,
+  photo: File
 }
 export const UploadModal = (props: Props) => {
   const { visible, onCancel } = props
-  const uploadProps: UploadProps = {
-    name: 'file',
-    multiple: true,
-    action: 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-      if (status === 'done') {
-        message.success(`${info.file.name} file uploaded successfully.`);
-      } else if (status === 'error') {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
-    onDrop(e) {
-      console.log('Dropped files', e.dataTransfer.files);
-    },
-  };
+  const [form] = Form.useForm()
+  const { uploadPic } = userStore
+  const [loading, setLoading] = useState(false)
+  const { messageApi } = useAppContext()
+
   return (
     <Modal
       title='上传图片'
-      onCancel={() => { onCancel(false) }}
+      onCancel={() => { onCancel() }}
       open={visible}
       okText='确认'
       cancelText='取消'
+      onOk={async () => {
+        await form.validateFields()
+        const values = await form.getFieldsValue()
+        const fileObj = values.photo?.fileList[0]?.originFileObj
+        setLoading(true)
+        try {
+          await uploadPic(
+            {
+              subject: values.subject,
+              description: values.description,
+              photo: fileObj,
+            }
+          )
+          setLoading(false)
+          onCancel()
+          messageApi.success('上传成功！')
+        } catch (e) {
+          messageApi.error(`${e}`)
+          setLoading(false)
+        }
+
+      }}
+      okButtonProps={{
+        loading: loading
+      }}
     >
-      <Dragger {...uploadProps}>
-        <p className="ant-upload-drag-icon">
-          <InboxOutlined />
-        </p>
-        <p className="text-[#646a73]">单击或拖动文件到此区域进行上传</p>
-      </Dragger>
+      <Form<FormValue>
+        form={form}
+        layout="vertical"
+      >
+        <Form.Item
+          name='subject'
+          label='图片名称'
+          required
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name='description'
+          label='图片描述'
+          required
+        >
+          <Input.TextArea />
+        </Form.Item>
+        <Form.Item
+          name='photo'
+          label='图片'
+          required
+        >
+          <Upload
+            listType="picture-card"
+            beforeUpload={() => false} // ✅ 阻止自动上传
+            maxCount={1}
+          >
+            <button style={{ border: 0, background: 'none' }} type="button">
+              <PlusOutlined />
+              <div style={{ marginTop: 8 }}>Upload</div>
+            </button>
+          </Upload>
+        </Form.Item>
+      </Form>
     </Modal>
   )
 }
