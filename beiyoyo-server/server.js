@@ -18,10 +18,14 @@ const {
   checkUserExists,
   hashPassword,
   checkLoginUser,
-  getUserInfo
+  getUserInfo,
+  cos
 } = require('./utils.js')
 
 const rateLimit = require('express-rate-limit');
+
+const Bucket = 'aibei-1258806962'; // 存储桶名称
+const Region = 'ap-shanghai'; 
 
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 分钟
@@ -148,7 +152,7 @@ app.post('/api/register',async (req,res) => {
     const expiresIn = (now + 7 * 24 * 60 * 60 * 1000)/1000; // 加上 7 天的毫秒数
     try{
       const encryptionPassword = await hashPassword(password)
-      const defaultAvatar = `${req.protocol}://${req.get('host')}/images/avatar.jpeg`
+      const defaultAvatar = `https://${Bucket}.cos.${Region}.myqcloud.com/avatar/avatar.jpeg`
       await db.query('INSERT INTO users (userID, userName, avatar, password, createAt, role, nickName) VALUES (?,?,?,?,?,?,?)', [userID, email, defaultAvatar,encryptionPassword, now, 'admin', 'test-001']);
       req.session.user = { email,userID, role: "admin" };
       res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
@@ -202,24 +206,62 @@ app.get('/api/get/user',async(req,res)=> {
     })
 })
 
-app.post('/api/upload/photo',upload.single('photo'), async(req,res) => {
-  const imageUrl = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
-  const { user: userInfo } = req.session
-  const {subject, description} = req.body
-  const now = Date.now()
-  const sql = 'INSERT INTO photo (userID, picUrl, subject, description, createAt) VALUES (?,?,?,?,?)';
+app.post('/api/upload/photo', upload.single('photo'), async (req, res) => {
+  const { user: userInfo } = req.session;
+  const { subject, description } = req.body;
 
-  await db.query(sql, [userInfo.userID, imageUrl,subject,description, now], (err, result) => {
-    if (err) return res.status(500).json({ error: '数据库写入失败' });
-  });
-  res.json({
-      code: 0,
-      message: '上传成功',
-      data: {
-        picUrl: imageUrl
-      }
-  });
-})
+  if (!req.file) return res.status(400).json({ error: '没有上传文件' });
+
+  const file = req.file;
+  const ext = path.extname(file.originalname);
+  const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
+
+  try {
+    console.log(file, ext, filename)
+    // 上传到 COS
+    await new Promise((resolve, reject) => {
+      cos.putObject(
+        {
+          Bucket,
+          Region,
+          Key: `photos/${filename}`,
+          Body: fs.createReadStream(file.path),
+          ContentLength: file.size,
+        },
+        (err, data) => {
+          if (err) return reject(err);
+          resolve(data);
+        }
+      );
+    });
+
+    // 删除本地临时文件
+    fs.unlink(file.path, () => {});
+
+    // 拼接 COS 公网访问地址
+    const imageUrl = `https://${Bucket}.cos.${Region}.myqcloud.com/photos/${filename}`;
+
+    const now = Date.now();
+    const sql =
+      'INSERT INTO photo (userID, picUrl, subject, description, createAt) VALUES (?,?,?,?,?)';
+
+    // 插入数据库
+    await db.query(
+      sql,
+      [userInfo.userID, imageUrl, subject, description, now])
+
+    res.json({
+          code: 0,
+          message: '上传成功',
+          data: {
+            picUrl: imageUrl,
+          },
+        });
+  } catch (err) {
+    console.error('上传失败:', err);
+    res.status(500).json({ error: '上传失败' });
+  }
+});
 
 app.get('/api/getPhotoList',async (req,res)=> {
   const {userID} = req.session.user

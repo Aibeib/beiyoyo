@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Layout, theme, Avatar, Input } from "antd";
+import { Layout, theme, Avatar, Input, message } from "antd";
 import "./index.less";
 import { UserInfo } from "./userInfo";
 import { Outlet } from "react-router-dom";
