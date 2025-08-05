@@ -8,7 +8,8 @@ export type User = {
   nickName: string,
   userID: string,
   avatar: string,
-  userName: string
+  userName: string,
+  backgroundImage: string
 }
 export interface GetUserInfoResp{
   code: number,

@@ -9,6 +9,7 @@ import { loginUrl, type LoginReq, type LoginResp } from "./login";
 import { getUserInfoURL, type GetUserInfoReq, type GetUserInfoResp } from "./getUserInfo";
 import { uploadPicURL, type UploadPicReq, type UploadPicResp } from "./uploadPic";
 import { getPhotoListURL, type GetPhotoListReq, type GetPhotoListResp } from "./getPhotoList";
+import { updateUserInfoURL, type UpdateUserInfoReq, type UpdateUserInfoResp } from "./updateUserInfo";
 class getApi {
  private request: AxiosInstance
   constructor() {
@@ -56,6 +57,14 @@ class getApi {
       url: getPhotoListURL,
       method: 'GET',
       params: params
+    })
+  }
+
+  updateUserInfo = (params: FormData): Promise<UpdateUserInfoResp> => {
+    return this.request({
+      url: updateUserInfoURL,
+      method: 'PUT',
+      data: params
     })
   }
 }

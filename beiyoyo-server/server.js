@@ -275,6 +275,115 @@ app.get('/api/getPhotoList',async (req,res)=> {
   })
 })
 
+app.put('/api/update/info', upload.fields(
+  [{ name: 'avatar', maxCount: 1 },
+  { name: 'backgroundImage', maxCount: 1 }]
+),async (req,res)=> {
+  const avatarFile = req.files['avatar']?.[0];
+  const backFile = req.files['backgroundImage']?.[0];
+  const { nickName } = req.body
+   const { user: userInfo } = req.session;
+  const avatarExt = path.extname(avatarFile.originalname);
+  const backExt = path.extname(backFile.originalname);
+
+  const avatarName = `${Date.now()}-${Math.random().toString(36).slice(2)}${avatarExt}`;
+  const backName = `${Date.now()}-${Math.random().toString(36).slice(2)}${backExt}`;
+
+
+  try {
+    // 拼接 COS 公网访问地址
+    const avatarImageUrl = `https://${Bucket}.cos.${Region}.myqcloud.com/avatar/${avatarName}`;
+    const backImageUrl = `https://${Bucket}.cos.${Region}.myqcloud.com/background/${backName}`;
+
+    const now = Date.now();
+    const sql = `
+        UPDATE users 
+        SET nickName = ?, avatar = ?, backgroundImage = ?, updateAt = ?
+        WHERE userID = ?
+      `;
+    const user = await getUserInfo(userInfo.userID)
+    await new Promise((resolve, reject)=> {
+      const {backgroundImage, avatar} = user
+      if(!avatar.includes('default')){
+        cos.deleteObject(
+          {
+            Bucket,  // 例如：example-1250000000
+            Region,            // 你的地域
+            Key: `avatar/${avatar.split('/').at(-1)}`,           // 例如：images/avatar.jpg
+          },
+          function (err, data) {
+            if (err) return reject(err);
+            resolve(data);
+          }
+        )
+      }
+      if(!backgroundImage.includes('default')) {
+         cos.deleteObject(
+          {
+            Bucket,  // 例如：example-1250000000
+            Region,            // 你的地域
+            Key: `background/${backgroundImage.split('/').at(-1)}`,           // 例如：images/avatar.jpg
+          },
+          function (err, data) {
+            if (err) return reject(err);
+            resolve(data);
+          }
+        )
+      }
+      
+    })
+    
+    // 插入数据库
+    await db.query(
+      sql,
+      [ nickName, avatarImageUrl, backImageUrl, now, userInfo.userID])
+
+    // 上传到 COS
+    await new Promise((resolve, reject) => {
+      cos.putObject(
+        {
+          Bucket,
+          Region,
+          Key: `avatar/${avatarName}`,
+          Body: fs.createReadStream(avatarFile.path),
+          ContentLength: avatarFile.size,
+        },
+        (err, data) => {
+          if (err) return reject(err);
+          resolve(data);
+        }
+      );
+      cos.putObject(
+        {
+          Bucket,
+          Region,
+          Key: `background/${backName}`,
+          Body: fs.createReadStream(backFile.path),
+          ContentLength: backFile.size,
+        },
+        (err, data) => {
+          if (err) return reject(err);
+          resolve(data);
+        }
+      );
+    });
+
+    // 删除本地临时文件
+    fs.unlink(avatarFile.path, () => {});
+    fs.unlink(backFile.path, () => {});
+
+
+    res.json({
+          code: 0,
+          message: '更新成功！',
+          data: {
+          },
+        });
+  } catch (err) {
+    console.error('更新失败:', err);
+    res.status(500).json({ error: '更新失败' });
+  }
+})
 
 app.listen(port, '0.0.0.0', () => {  
   console.log(`Proxy server is listening on url http://${getLocalIP()}:${port}`);  

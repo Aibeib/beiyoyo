@@ -55,6 +55,7 @@ export const UploadModal = (props: Props) => {
       <Form<FormValue>
         form={form}
         layout="vertical"
+        clearOnDestroy
       >
         <Form.Item
           name='subject'

@@ -5,13 +5,16 @@ import type { LoginReq } from "@/api/login";
 import type { RegisterUserReq } from "@/api/registerUser";
 import type { UploadPicReq } from "@/api/uploadPic";
 import type { PhotoInfo } from "@/api/getPhotoList";
+import type { UpdateUserInfoReq } from "@/api/updateUserInfo";
+import { message } from "antd";
 
-class UserStore{
+export class UserStore{
   userInfo: User = {
     userID: '',
     userName: '',
     nickName: '',
     avatar: '',
+    backgroundImage: ''
   }
   photoList: PhotoInfo[] = []
   constructor(){
@@ -50,7 +53,13 @@ class UserStore{
     const {photoList}  = data.data
     this.photoList = photoList
   }
-
+  updateUserInfo = async(params: FormData) => {
+    const data = await getApi.updateUserInfo(params)
+    if(data.code === 0) {
+      message.success('更新成功')
+      await this.getUserInfo()
+    }
+  }
 }
 
 export default  new UserStore()
