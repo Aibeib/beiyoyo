@@ -3,3 +3,40 @@
     padding: 0!important;
   }
 }
+.custom-upload-wrapper {
+  position: relative;
+  // width: 150px;
+  // height: 150px;
+  overflow: hidden;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.custom-upload-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.custom-upload-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.45);
+  color: white;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.custom-upload-wrapper:hover .custom-upload-mask {
+  opacity: 1;
+  pointer-events: auto;
+}

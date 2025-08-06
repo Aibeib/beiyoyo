@@ -1,7 +1,7 @@
 import { useAppContext } from "@/context"
 import type { UserStore } from "@/store/userStore"
 import { SwapOutlined } from "@ant-design/icons"
-import { Form, Input, message, Modal, Upload } from "antd"
+import { Form, Input, Modal, Upload } from "antd"
 import { useEffect, useState } from "react"
 
 type Props = {
@@ -20,7 +20,6 @@ export const EditInfoModal = (props: Props) => {
   const { messageApi } = useAppContext()
   const [loading, setLoading] = useState(false)
   const [form] = Form.useForm()
-  console.log(userInfo.nickName, 'nickName')
   const defaultAvatarFile = [
     {
       uid: '-1',
@@ -39,12 +38,15 @@ export const EditInfoModal = (props: Props) => {
   ];
 
   useEffect(() => {
-    form.setFieldsValue({
-      nickName: userInfo.nickName,
-      avatar: defaultAvatarFile,
-      backgroundImage: defaultBackgroundFile,
-    });
-  }, [form, userInfo]);
+    if (visible) {
+      form.setFieldsValue({
+        nickName: userInfo.nickName,
+        avatar: defaultAvatarFile,
+        backgroundImage: defaultBackgroundFile,
+      });
+    }
+
+  }, [form, userInfo, visible]);
 
   return (
     <Modal
@@ -119,6 +121,7 @@ export const EditInfoModal = (props: Props) => {
               <SwapOutlined />
               <div style={{ marginTop: 8 }}>更换图片</div>
             </button>
+
           </Upload>
         </Form.Item>
         <Form.Item

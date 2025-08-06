@@ -35,7 +35,7 @@ const Page: React.FC = () => {
           zIndex: 1,
           width: "100%",
           display: "flex",
-          background: colorBgContainer,
+          background: "rgba(255,255,255,0.3)",
           alignItems: "center",
         }}
         className="header content_bg mb-4"
@@ -47,9 +47,9 @@ const Page: React.FC = () => {
           size='large'
         />
         <div className="w-[calc(100%-32px)] flex justify-end ">
-          <div className="mr-4">
+          {/* <div className="mr-4">
             <Input className="h-8" />
-          </div>
+          </div> */}
           <div className="ml-3 flex items-center cursor-pointer">
             <UserInfo />
           </div>
@@ -66,12 +66,12 @@ const Page: React.FC = () => {
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
           }}
-          className="content-container bg_color content_bg h-full overflow-auto"
+          className="content-container !bg-[rgba(255,255,255,0.3)] bg_color content_bg h-full overflow-auto"
         >
           <Outlet />
         </div>
       </Content>
-      <Footer style={{ textAlign: "center" }} className="footer content_bg ">
+      <Footer style={{ textAlign: "center" }} className="footer !text-[#646a73] content_bg !bg-black ">
         浙 ICP 备 2025181263 号 ©{new Date().getFullYear()} Created by Aibei
       </Footer>
     </Layout>

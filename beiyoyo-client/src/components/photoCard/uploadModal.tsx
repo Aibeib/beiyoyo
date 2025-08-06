@@ -51,6 +51,7 @@ export const UploadModal = (props: Props) => {
       okButtonProps={{
         loading: loading
       }}
+      destroyOnHidden
     >
       <Form<FormValue>
         form={form}
@@ -82,8 +83,7 @@ export const UploadModal = (props: Props) => {
             maxCount={1}
           >
             <button style={{ border: 0, background: 'none' }} type="button">
-              <PlusOutlined />
-              <div style={{ marginTop: 8 }}>Upload</div>
+              <PlusOutlined className="!text-[30px] cursor-pointer !text-[#646a73]" />
             </button>
           </Upload>
         </Form.Item>

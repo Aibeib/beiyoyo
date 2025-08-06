@@ -1,5 +1,5 @@
 import { EditOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
-import { Avatar, Button, Popover, Space } from "antd";
+import { Avatar, Button, Popover, Space, Image } from "antd";
 import { observer } from "mobx-react";
 import { useMemo, useState } from "react";
 import userStore from "@/store/userStore";
@@ -13,10 +13,10 @@ export const UserInfo = observer(() => {
 
   const userInfoContent = useMemo(() => {
     return (
-      <div className="min-w-[200px] w-[240px] flex flex-col items-center !h-[300px]">
+      <div className="min-w-[180px] w-[220px] flex flex-col items-center !h-[260px]">
 
-        <div className="relative flex items-center justify-center w-full h-[200px]">
-          <img className=" border-none rounded-tl-[8px] rounded-tr-[8px] w-[100%] !h-full absolute top-0 left-0 z-0 " src={userInfo.backgroundImage} alt="" />
+        <div className="relative flex items-center justify-center w-full h-[140px]">
+          <img className=" border-none object-cover rounded-tl-[8px] rounded-tr-[8px] w-[100%] !h-full absolute top-0 left-0 z-0 " src={userInfo.backgroundImage} alt="" />
           <Avatar shape="circle" size="large" src={userInfo.avatar}></Avatar>
         </div>
         <div className="text-[#646a73] p-3 w-full">
