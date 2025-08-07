@@ -16,7 +16,7 @@ import axios from "axios";
 import getApi from "@/api/request";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "@/context";
-import userStore from "@/store/userStore";
+import userStore from "@/stores/userStore";
 
 const { Item } = Form;
 

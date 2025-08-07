@@ -1,6 +1,6 @@
 import { PlusOutlined } from "@ant-design/icons"
 import { Form, Input, Modal, Upload, } from "antd"
-import userStore from "@/store/userStore"
+import userStore from "@/stores/userStore"
 import { useState } from "react"
 import { useAppContext } from "@/context"
 type Props = {

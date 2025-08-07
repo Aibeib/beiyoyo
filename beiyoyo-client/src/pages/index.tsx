@@ -3,7 +3,7 @@ import { Layout, theme, Avatar, Input, message } from "antd";
 import "./index.less";
 import { UserInfo } from "./userInfo";
 import { Outlet } from "react-router-dom";
-import userStore from "@/store/userStore";
+import userStore from "@/stores/userStore";
 
 const { Header, Content, Footer } = Layout;
 
@@ -56,7 +56,7 @@ const Page: React.FC = () => {
         </div>
       </Header>
       <Content
-        style={{ padding: "0 48px" }}
+        style={{ padding: "0 48px", width: '1200px', margin: '0 auto' }}
         className="content  h-[calc(100vh-149px)]"
       >
         <div

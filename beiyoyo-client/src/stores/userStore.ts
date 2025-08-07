@@ -5,7 +5,6 @@ import type { LoginReq } from "@/api/login";
 import type { RegisterUserReq } from "@/api/registerUser";
 import type { UploadPicReq } from "@/api/uploadPic";
 import type { PhotoInfo } from "@/api/getPhotoList";
-import type { UpdateUserInfoReq } from "@/api/updateUserInfo";
 import { message } from "antd";
 
 export class UserStore{

@@ -1,6 +1,6 @@
 import Page from "@/pages/index";
 import { Login } from "./pages/login";
-import { PhotoList } from "./components/photoList";
+import { Home } from "./pages/home";
 
 const routes = [
   {
@@ -15,7 +15,7 @@ const routes = [
     children: [
       {
         path: "aibei",
-        element: <PhotoList />,
+        element: <Home />,
         meta: { title: "首页", requiresAuth: true },
       },
     ],

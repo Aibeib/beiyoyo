@@ -2,7 +2,7 @@ import { EditOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
 import { Avatar, Button, Popover, Space, Image } from "antd";
 import { observer } from "mobx-react";
 import { useMemo, useState } from "react";
-import userStore from "@/store/userStore";
+import userStore from "@/stores/userStore";
 import './index.less'
 import { EditInfoModal } from "./editInfoModal";
 

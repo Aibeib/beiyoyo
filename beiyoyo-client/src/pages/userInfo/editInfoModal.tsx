@@ -1,5 +1,5 @@
 import { useAppContext } from "@/context"
-import type { UserStore } from "@/store/userStore"
+import type { UserStore } from "@/stores/userStore"
 import { SwapOutlined } from "@ant-design/icons"
 import { Form, Input, Modal, Upload } from "antd"
 import { useEffect, useState } from "react"
