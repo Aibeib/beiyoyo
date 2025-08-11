@@ -3,6 +3,7 @@ import { Form, Input, Modal, Upload, } from "antd"
 import userStore from "@/stores/userStore"
 import { useState } from "react"
 import { useAppContext } from "@/context"
+import { observer } from "mobx-react"
 type Props = {
   visible: boolean
   onCancel: () => void
@@ -12,7 +13,7 @@ type FormValue = {
   description: string,
   photo: File
 }
-export const UploadModal = (props: Props) => {
+export const UploadModal = observer((props: Props) => {
   const { visible, onCancel } = props
   const [form] = Form.useForm()
   const { uploadPic } = userStore
@@ -90,4 +91,4 @@ export const UploadModal = (props: Props) => {
       </Form>
     </Modal>
   )
-}
+})

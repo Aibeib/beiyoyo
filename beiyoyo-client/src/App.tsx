@@ -5,8 +5,10 @@ import { Suspense } from "react";
 
 function App() {
   const element = useRoutes(routes);
+
   return (
     <>
+
       <Suspense fallback={<div>Loading...</div>}>
         {element}
       </Suspense>
