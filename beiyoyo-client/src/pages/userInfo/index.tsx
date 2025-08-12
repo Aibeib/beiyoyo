@@ -19,7 +19,7 @@ export const UserInfo = observer(() => {
           <img className=" border-none object-cover rounded-tl-[8px] rounded-tr-[8px] w-[100%] !h-full absolute top-0 left-0 z-0 " src={userInfo.backgroundImage} alt="" />
           <Avatar shape="circle" size="large" src={userInfo.avatar}></Avatar>
         </div>
-        <div className="text-[#646a73] p-3 w-full">
+        <div className="p-3 w-full">
           <Space align="start" direction="vertical" className="w-full">
             <div className="flex items-center">
               <span>昵称：</span>

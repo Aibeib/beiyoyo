@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, Form, Input, Image, Tooltip, Space } from "antd";
+import { Button, Form, Input, Image, Tooltip, Space, theme } from "antd";
 import { observer } from "mobx-react";
 import "./index.css";
 import { useEffect, useMemo, useState } from "react";
@@ -8,7 +8,9 @@ import {
   EyeInvisibleOutlined,
   EyeTwoTone,
   MailOutlined,
+  MoonFilled,
   SendOutlined,
+  SunFilled,
 } from "@ant-design/icons";
 import OneMinuteCountdown from "@/components/countDown";
 import { BtnTextMapper, LoginFormType } from "./const";
@@ -17,6 +19,8 @@ import getApi from "@/api/request";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "@/context";
 import userStore from "@/stores/userStore";
+import { UIStore } from '@/stores/index'
+import { Them } from "@/stores/type";
 
 const { Item } = Form;
 
@@ -27,56 +31,84 @@ export const Login = observer(() => {
   const [isShowPassword, setIsShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login, registerUser } = userStore
+  const { them, setThem } = UIStore
+  const {
+    token: { borderRadiusLG, colorBgContainer },
+  } = theme.useToken();
 
   const { messageApi } = useAppContext();
 
   const navigate = useNavigate();
 
   const mailSuffix = useMemo(() => {
-    if (loginFormType !== LoginFormType.Login) {
-      if (isSended) {
-        return (
-          <OneMinuteCountdown
-            deadline={15000}
-            onFinish={() => setIsSended(false)}
+    if (isSended) {
+      return (
+        <OneMinuteCountdown
+          deadline={15000}
+          onFinish={() => setIsSended(false)}
+        />
+      );
+    } else {
+      return (
+        <Tooltip title={"发送验证码"}>
+          <SendOutlined
+            className={classNames(
+              "!text-[#757575]  cursor-pointer", {
+              "hover:!text-[#1f2327]": them === Them.Light,
+              "hover:!text-[white]": them === Them.Dark,
+            }
+            )}
+            onClick={async () => {
+              const mail = await form.getFieldValue("email");
+              if (mail) {
+                setIsSended(true);
+                await axios({
+                  url: "/proxy-api/api/verification_code",
+                  method: "POST",
+                  data: {
+                    email: mail,
+                  },
+                });
+              }
+            }}
           />
-        );
-      } else {
-        return (
-          <Tooltip title={"发送验证码"}>
-            <SendOutlined
-              className={classNames(
-                "!text-[#757575] hover:!text-[#1f2327] cursor-pointer"
-              )}
-              onClick={async () => {
-                const mail = await form.getFieldValue("email");
-                if (mail) {
-                  setIsSended(true);
-                  const res = await axios({
-                    url: "/proxy-api/api/verification_code",
-                    method: "POST",
-                    data: {
-                      email: mail,
-                    },
-                  });
-                  console.log(res, "res");
-                }
-              }}
-            />
-          </Tooltip>
-        );
-      }
+
+        </Tooltip>
+      );
     }
-    return <MailOutlined className="!text-[#757575]" />;
-  }, [form, isSended, loginFormType]);
+  }, [form, isSended, loginFormType, them]);
 
   useEffect(() => {
     form.resetFields();
   }, [loginFormType]);
 
   return (
-    <div className="login-container min-h-[800px] overflow-auto ">
-      <div className="screen-1 min-h-[400px]  flex justify-center w-[360px]">
+    <div
+      className={classNames("login-container min-h-[800px] relative overflow-auto", {
+        'shadow-[0_0_2em_#1f2327]': true
+      })}
+      style={{
+        background: colorBgContainer
+      }}
+    >
+      <div className="mx-3 absolute z-10 top-6 right-6">
+        {them === Them.Light ? <MoonFilled
+          onClick={() => {
+            setThem(Them.Dark)
+          }}
+        /> : <SunFilled
+
+          onClick={() => {
+            setThem(Them.Light)
+          }}
+          className="!text-[white]"
+        />
+        }
+      </div>
+      <div className={classNames("screen-1 min-h-[400px]  flex justify-center w-[360px]", {
+        'shadow-[0_0_2em_#ffffff26]': them === Them.Dark,
+        'shadow-[0_0_2em_#e6e9f9]': them === Them.Light,
+      })}>
         <Image
           rootClassName="!flex !justify-center !items-center"
           src="../../../public/logo_1.png"
@@ -102,12 +134,15 @@ export const Login = observer(() => {
                   message: "请输入邮箱",
                 },
               ]}
-              className="email !pb-1 w-full !mb-0"
+              className={classNames("email !pb-1 w-full !mb-0", {
+                'shadow-[0_0_2em_#ffffff26]': them === Them.Dark,
+                'shadow-[0_0_2em_#e6e9f9]': them === Them.Light,
+              })}
             >
               <Input
                 placeholder="请输入邮箱"
                 className="w-full"
-                suffix={mailSuffix}
+                suffix={<MailOutlined className="!text-[#757575]" />}
                 variant="borderless"
               />
             </Item>
@@ -124,7 +159,10 @@ export const Login = observer(() => {
                   message: "请输入密码",
                 },
               ]}
-              className={classNames("password !border-none !pb-1 !mb-0", {})}
+              className={classNames("password !border-none !pb-1 !mb-0", {
+                'shadow-[0_0_2em_#ffffff26]': them === Them.Dark,
+                'shadow-[0_0_2em_#e6e9f9]': them === Them.Light,
+              })}
             >
               <Input.Password
                 type="password"
@@ -145,7 +183,10 @@ export const Login = observer(() => {
                     message: "请输入密码",
                   },
                 ]}
-                className={classNames("password !border-none !pb-1 !mb-0", {})}
+                className={classNames("password !border-none !pb-1 !mb-0", {
+                  'shadow-[0_0_2em_#ffffff26]': them === Them.Dark,
+                  'shadow-[0_0_2em_#e6e9f9]': them === Them.Light,
+                })}
               >
                 <Input.Password
                   type="password"
@@ -179,16 +220,24 @@ export const Login = observer(() => {
                     message: "请输入验证码",
                   },
                 ]}
-                className="password border-none !pb-1 !mb-0"
+                className={classNames("password border-none !pb-1 !mb-0", {
+                  'shadow-[0_0_2em_#ffffff26]': them === Them.Dark,
+                  'shadow-[0_0_2em_#e6e9f9]': them === Them.Light,
+                })}
               >
-                <Input placeholder="请输入验证码" variant="borderless" />
+                <Input
+                  placeholder="请输入验证码"
+                  variant="borderless"
+                  suffix={mailSuffix}
+                />
               </Item>
             )}
           </Space>
         </Form>
         <Button
-          className="create-btn p-[1em] !bg-[#3e4684] !text-[white] !border-none !rounded-[30px] !font-[600] hover:!bg-[rgba(62,70,132,0.8)] !flex !items-center !justify-center"
+          className=" !rounded-[16px]"
           onClick={async () => {
+            await form.validateFields()
             const { email, password, verificationCode } =
               await form.getFieldsValue();
             try {
